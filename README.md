@@ -22,3 +22,13 @@ sam deploy --guided
 ```
 sam local invoke --parameter-overrides "ParameterKey=UrlToMonitorParameter,ParameterValue=https://google.com"
 ```
+
+# Delete stack
+
+```
+aws cloudformation delete-stack --stack-name uptime-monitor
+```
+
+```
+aws cloudformation list-stacks --stack-status-filter DELETE_IN_PROGRESS
+```
