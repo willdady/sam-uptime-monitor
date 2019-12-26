@@ -1,16 +1,8 @@
+Serverless application which will ping a URL every N minutes. Sends an email when transitioning between OK and ALARM states.
+
 # Setup
 
-1. Install virtualenvwrapper
-2. Install aws-sam-cli (`brew install aws-sam-cli`)
-3. Install Docker for Mac
-4. `sam build`
-5. `sam deploy --guided` (See https://aws.amazon.com/blogs/compute/a-simpler-deployment-experience-with-aws-sam-cli/)
-
-# Invoking locally
-
-```
-sam local invoke --parameter-overrides "ParameterKey=UrlToMonitorParameter,ParameterValue=https://google.com"
-```
+Checkout repository and create a virtual environment for it targeting Python 3. Install aws-sam-cli (on Mac `brew install aws-sam-cli`) and Docker.
 
 # Building
 
@@ -22,4 +14,10 @@ sam build
 
 ```
 sam deploy --guided
+```
+
+# Invoking locally
+
+```
+sam local invoke --parameter-overrides "ParameterKey=UrlToMonitorParameter,ParameterValue=https://google.com"
 ```
