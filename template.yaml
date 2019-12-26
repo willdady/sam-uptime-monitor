@@ -1,0 +1,78 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  uptime-monitor
+
+Parameters:
+  UrlToMonitorParameter:
+    Type: String
+    Description: URL to monitor for uptime e.g https://example.com/path
+  EmailParameter:
+    Type: String
+    Description: Email address to send alarm notifications to e.g me@example.com
+  ScheduleMinutesParameter:
+    Type: Number
+    Description: How often to poll url in minutes
+    Default: 3
+
+Resources:
+  UptimeMonitorMetric:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      FilterPattern: "ERROR"
+      LogGroupName: "/aws/lambda/uptime_monitor"
+      MetricTransformations:
+        - MetricName: UptimeMonitorErrorCount
+          MetricNamespace: uptime_monitor
+          DefaultValue: 0
+          MetricValue: 1
+
+  UptimeMonitorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmActions:
+        - !Ref UptimeMonitorSNSTopic
+      AlarmDescription: !Sub "Monitors uptime of ${UrlToMonitorParameter}"
+      AlarmName: uptime_monitor_alarm
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      EvaluationPeriods: 1
+      MetricName: UptimeMonitorErrorCount
+      Namespace: uptime_monitor
+      OKActions:
+        - !Ref UptimeMonitorSNSTopic
+      Period: 60
+      Statistic: Sum
+      Threshold: 1
+
+  UptimeMonitorSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: uptime_monitor_topic
+      Subscription:
+        - Endpoint: !Ref EmailParameter
+          Protocol: email
+
+  UptimeMonitorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: uptime_monitor
+      CodeUri: uptime_monitor/
+      Handler: app.lambda_handler
+      Runtime: python3.7
+      Timeout: 10
+      Events:
+        UptimeMonitor:
+          Type: Schedule
+          Properties:
+              Schedule: !Sub "rate(${ScheduleMinutesParameter} minutes)"
+      Environment:
+        Variables:
+          URL: !Ref UrlToMonitorParameter
+
+Outputs:
+  UptimeMonitorFunction:
+    Description: "UptimeMonitorFunction ARN"
+    Value: !GetAtt UptimeMonitorFunction.Arn
+  UptimeMonitorFunctionIamRole:
+    Description: "Implicit IAM Role created for UptimeMonitorFunction"
+    Value: !GetAtt UptimeMonitorFunctionRole.Arn
