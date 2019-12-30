@@ -29,6 +29,8 @@ sam local invoke --parameter-overrides "ParameterKey=UrlToMonitorParameter,Param
 aws cloudformation delete-stack --stack-name uptime-monitor
 ```
 
+Confirm stack is being deleted.
+
 ```
 aws cloudformation list-stacks --stack-status-filter DELETE_IN_PROGRESS
 ```
